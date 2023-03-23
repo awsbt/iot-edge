@@ -1,0 +1,8 @@
+kind: ""       
+apiversion: "" 
+resources:
+  - secret_agent_config_peraton.yaml
+  - certs.yaml
+  - iot-secrets.yaml
+  - am-peratonca.yaml
+
