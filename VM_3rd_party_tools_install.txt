@@ -1,0 +1,233 @@
+************************** steps to provisioning new ubuntu VM: ***********************************
+
+I like to work in a fullscreen Ubuntu VM. The default disk size is just 12GB, when following the standard Hyper-V Quick Create instructions for creating an Ubuntu VM. 
+But if you create a VM from your own downloaded image, its Connect window won't resize automatically. 
+Here is a way to modify the Quick Create Ubuntu VM's disk size before the Ubuntu installation actually starts.
+
+Follow instructions for enabling Hyper-V in Windows 10, but stop before actually creating the VM: 
+https://www.tutorialspoint.com/windows10/windows10_virtualization.htm (See also https://github.com/Microsoft/linux-vm-tools/wiki/Onboarding:-Ubuntu
+Obtain a copy of the gparted-live-*-amd64.iso from here, https://gparted.org/download.php, or here, 
+https://www.download3k.com/Install-GParted-LiveCD.html, and note its file directory location for later. Be sure to check md5 and SHA1 checksums for validity.
+Click on Start, type Hyper-V, select Hyper-V Manager desktop app
+Under Actions, select Quick Create
+Select your desired Ubuntu desktop, for example Ubuntu 18.04.2 LTS (22.04)
+Optional: click on More Options, change Name; for example to -desktop
+Click on Create Virtual Machine. You will see a download page. Wait until it is completed. When it is done, you will see a splash page saying Virtual Machine created successfully.
+DON'T click connect just yet! Instead, click on Edit Settings.
+Under Hardware ==> Add Hardware, click on SCSI Controller
+Select DVD Drive and click on Add.
+Under Media, select Image File, and browse to your gparted-live-*-amd64.iso, then click Apply at the bottom of the page.
+Select the other SCSI controller with the preinstalled drive image, and click on the Hard Drive (e.g. -desktop.vhdx)
+Under Virtual Hard Disk, click the Edit button under the name of your desktop vhdx image.
+On the next screen, you will see the file location. Click Next.
+On this screen, you will see three options: Compact, Convert and Expand. Click on Expand, then Next
+Enter the new size for your desktop image (e.g. 64GB) and click Next
+Review your settings, backing up to correct if necessary, then Finish
+On Settings page again, hit Apply
+Under Hardware, click on Firmware
+Move gparted DVD drive to top of boot order and click Apply
+Click on OK to finish changing settings
+Back on Virtual Machine created successfully page, click Connect, then when the window comes up, Start
+When the GPARTED start screen comes up, cursor down to the boot to RAM option (probably the 3rd one down) (this time its the second one)
+Select default keyboard, US English, and "0" to boot X. (select from list and go thru proper selections)
+Select /dev/sda1 and click on Resize/Move
+Adjust to new size, with no space preceding or following, then click Resize/Move
+Click Apply and Close
+Select File -> Exit
+If session is still running: back in Hyper-V Manager, select the VM and then Shut Down
+Go back into the VM Settings,
+Under Firmware, modify Boot settings -- move DVD drive with the GPARTED iso down to last, then click Apply
+Under the SCSI controller associated with the GPARTED iso DVD Drive, select DVD drive
+Under Media, select None, to avoid always having to mount GPARTED.
+Then click Apply and OK.
+Now Connect to the VM again. It should start up with the regular Ubuntu installation using the enlarged disk size.
+It would be nice if the Quick Create path allowed the user to resize the VM hard drive without having to use GPARTED
+
+Set-VMProcessor -VMName "image name" -ExposeVirtualizationExtensions $true   (so we can install virtualbox)
+
+(need to upgrade first)
+
+https://www.itsupportwale.com/blog/how-to-upgrade-to-python-3-9-0-on-ubuntu-18-04-lts/     (use this to install python 3.9.6)
+
+install vs code:
+sudo apt install snapd 
+sudo snap install code --classic 
+
+https://www.youtube.com/watch?v=fRwbpBol4Aw  (Terminal won't start)
+shift key, boot to root prompt:
+
+use VS CODE to fix it:
+cd /usr/bin
+sudo cp gnome-terminal gnome-terminal-backup
+sudo cp gnome-terminal.real gnome-terminal
+
+ModuleNotFoundError: No module named 'apt_pkg':
+cd  /usr/lib/python3/dist-packages
+ls -la /usr/lib/python3/dist-packages
+sudo cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
+
+curl:
+sudo apt install curl
+
+python3:
+https://linuxhint.com/install-python-ubuntu-22-04/
+sudo apt install python-is-python3
+
+skaffold:
+#curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.26.1/skaffold-linux-amd64 && chmod +x skaffold && sudo mv skaffold /usr/local/bin
+curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && sudo install skaffold /usr/local/bin/
+
+minikube:
+curl -LO https://storage.googleapis.com/minikube/releases/v1.26.1/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+#url -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+
+
+kubectl will be included: still need to install, see below
+#alias kubectl="minikube kubectl --"
+
+#curl -LO https://dl.k8s.io/release/v1.21.2/bin/linux/amd64/kubectl
+curl -LO https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+#chmod +x kubectl
+#mkdir -p ~/.local/bin
+#mv ./kubectl ~/.local/bin/kubectl
+kubectl version --client
+
+
+
+virtualbox:
+#virtualbox-6.1_6.1.22-144080~Ubuntu~bionic_amd64.deb (download)
+#virtualbox-7.0_7.0.6-155176_Ubuntu_bionic_amd64.deb
+#sudo apt install /home/bill/Downloads/virtualbox-6.1_6.1.6-137129_Ubuntu_bionic_amd64.deb
+virtualbox-7.0_7.0.6-155176_Ubuntu_jammy_amd64
+then use software install
+
+git:
+sudo apt update
+sudo apt install git
+
+git config --global user.name "Bill Tsai"
+git config --global user.email "bill_tsai_va@hotmail.com"
+
+
+kubectl:
+snap install kubectl --classic
+kubectl version --client
+
+kubectx:
+#sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx
+#sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
+#sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens
+sudo snap install kubectx --classic
+
+
+kustomize:
+https://kubectl.docs.kubernetes.io/installation/kustomize/
+download from release site: kustomize_v4.2.0_linux_amd64.tar.gz
+download kustomize_v5.0.1_linux_amd64.tat.gz
+sudo ln -s /home/bill/Downloads/kustomize /usr/local/bin/kustomize
+
+docker ce:
+https://docs.docker.com/engine/install/ubuntu/
+https://download.docker.com/linux/ubuntu/dists/
+Index of linux/ubuntu/dists/jammy/pool/stable/amd64/
+#download containerd.io_1.4.9-1_amd64.deb
+#download docker-ce-cli_20.10.8~3-0~ubuntu-bionic_amd64.deb
+#download docker-ce_20.10.8~3-0~ubuntu-bionic_amd64.deb
+#sudo dpkg -i /home/bill/Downloads/containerd.io_1.4.9-1_amd64.deb
+#sudo dpkg -i /home/bill/Downloads/docker-ce-cli_20.10.8~3-0~ubuntu-bionic_amd64.deb
+#sudo dpkg -i /home/bill/Downloads/docker-ce_20.10.8~3-0~ubuntu-bionic_amd64.deb
+
+containerd.io_1.6.19-1_amd64.deb
+docker-ce_23.0.1-1_ubuntu.22.04_jammy_amd64.deb
+docker-ce-cli_23.0.1-1_ubuntu.22.04_jammy_amd64.deb
+then use software install
+
+mkcert:
+#sudo apt install libnss3-tools -y
+#wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-linux-amd64
+#sudo cp mkcert-v1.4.3-linux-amd64 /usr/local/bin/mkcert
+#sudo chmod +x /usr/local/bin/mkcert
+
+sudo apt-get update
+sudo apt-get -y install mkcert
+
+
+aws cli:
+#curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.2.13.zip" -o "awscliv2.zip"
+#unzip awscliv2.zip
+#sudo ./aws/install
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+aws-iam-authenticator:
+curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator
+chmod +x ./aws-iam-authenticator
+mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+aws-iam-authenticator help
+
+jdk: Installing the Default JRE/JDK
+https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-18-04
+
+eclipse:
+https://linuxize.com/post/how-to-install-the-latest-eclipse-ide-on-ubuntu-18-04/
+sudo snap install --classic eclipse
+
+minikube start --cpus=3 --memory=12288 --disk-size=40g --cni=true --kubernetes-version=v1.23.8 --addons=ingress,volumesnapshots --driver=virtualbox --bootstrapper kubeadm
+
+eval $(minikube docker-env)
+skaffold config set --kube-context minikube local-cluster true
+
+
+create key pair:
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 > pem-bot-01.key.pem
+
+create signing request:
+openssl req -new -key pem-bot-01.key.pem -out pem-bot-01.csr
+
+sign csr (and create cert) with our own CA:
+openssl x509 -req -days 360 -in pem-bot-01.csr -CA CA_server.crt -CAkey CA_serverPrivateKey.pem -CAcreateserial -out pem-bot-01.crt
+
+
+Relevant passwords:
+fjttHujEDMWMV0CKhbLQpQ37 (amadmin user)
+zZ9zQmKx8c0s5eAMrW3tgOip (openidm-admin user)
+xwctO52Vgsb5uPCrK7SgfPcTWXr4Ki48 (uid=admin user)
+JaL540WSCE5VaRuTbaSd3LeRxcUaE4Ke (App str svc acct (uid=am-config,ou=admins,ou=am-config))
+ROjyJOgVKmg7pl2Sk0M3jdjUKwM6vL0e (CTS svc acct (uid=openam_cts,ou=admins,ou=famrecords,ou=openam-session,ou=tokens))
+gm73BajD0EBjJXJlGhGFDMqzfOkojWTd (ID repo svc acct (uid=am-identity-bind-account,ou=admins,ou=identities))
+
+Relevant URLs:
+https://fr0.zte.peraton.com/platform
+https://fr0.zte.peraton.com/admin
+https://fr0.zte.peraton.com/am
+https://fr0.zte.peraton.com/enduser
+
+Enjoy your deployment!
+=====================================================
+Applying custom DS schema
+=====================================================
+Defaulted container "ds" out of: ds, init (init)
+Defaulted container "ds" out of: ds, init (init)
+# MODIFY operation successful for DN cn=schema
+
+bill@bill-Virtual-Machine:~/irad/iot-edge/deployments/forgeops$ 
+
+
+kubectl annotate ingress forgerock cert-manager.io/cluster-issuer-
+kubectl delete certificate sslcert
+kubectl create secret tls sslcert --cert=./fr0.zte.peraton.com.pem --key=./fr0.zte.peraton.com-key.pem --namespace=iot --dry-run=client -o yaml | kubectl apply -f -
+
+jq:
+sudo apt update
+sudo apt install -y jq
+
+go:
+sudo apt  install golang-go
+
+
+
