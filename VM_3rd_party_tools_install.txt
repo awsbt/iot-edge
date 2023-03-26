@@ -229,5 +229,8 @@ sudo apt install -y jq
 go:
 sudo apt  install golang-go
 
+java:
+https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-22-04
 
-
+apache directory studio:
+show directory metadata (three dots menu: to show schema)
