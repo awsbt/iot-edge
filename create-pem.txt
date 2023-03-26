@@ -1,0 +1,57 @@
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 > private_key.pem
+
+openssl req -x509 -key private_key.pem -subj /CN=client.example.com -days 1000 > certificate.pem
+
+
+How to generate a JWK representing a self-signed certificate
+This short article shows command lines to generate a key pair in PEM format and a JWK representing a self-signed certificate for the key pair with the x5c claim.
+
+1. Create a private key
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 > private_key.pem
+
+NOTE: Be sure that openssl is from OpenSSL, not LibreSSL.
+
+2. Extract the public key from the private key
+openssl pkey -pubout -in private_key.pem > public_key.pem
+
+3. Generate a self-signed certificate for the key pair
+openssl req -x509 -key private_key.pem -subj /CN=client.example.com -days 1000 > certificate.pem
+
+4. Convert the format of the public key from PEM to JWK
+npm install -g eckles
+eckles public_key.pem > public_key.jwk
+
+5. Generate a JWK including the certificate
+CERT=$(sed /-/d certificate.pem | tr -d \\n)
+jq ".+{\"x5c\":[\"$CERT\"]}" public_key.jwk > pub+cert.jwk
+Output: pub+cert.jwk
+{
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "btjiy3sbUjxc4LKyDujKCzgh0Nv0WiVgY5k61-ZRUkI",
+  "y": "Gck9a3RVmUADrHp2XPBOFxb31QIzUk6KtiWU320Qc2s",
+  "x5c": [
+    "MIIBjzCCATWgAwIBAgIUeaASdMyJhml/k/PQ46j9f2XJzPQwCgYIKoZIzj0EAwIwHTEbMBkGA1UEAwwSY2xpZW50LmV4YW1wbGUuY29tMB4XDTIyMDYwOTA0MTE1OVoXDTI1MDMwNTA0MTE1OVowHTEbMBkGA1UEAwwSY2xpZW50LmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEbtjiy3sbUjxc4LKyDujKCzgh0Nv0WiVgY5k61+ZRUkIZyT1rdFWZQAOsenZc8E4XFvfVAjNSToq2JZTfbRBza6NTMFEwHQYDVR0OBBYEFO4bTj08bx2Xk4SCXcndo4QaMi+yMB8GA1UdIwQYMBaAFO4bTj08bx2Xk4SCXcndo4QaMi+yMA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIhAKcCvn43iBxdVzE1JrEfXcEbF9TX6vxwPWyAvCzEHsQjAiBCxSFx59KDRAJys0umzxmpJkWRX1EcJkR1h9tYD8Dn1g=="
+  ]
+}
+
+
+openssl pkey -pubout -in pem-bot-01.key.pem > pem-bot-01.public.key.pem
+openssl pkey -pubout -in eckey1.key.pem > eckey1.public.key.pem
+
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 > pem-bot-01.key.pem
+
+openssl req -x509 -key pem-bot-01.key.pem -subj /CN=pem-bot-01 -days 1000 > pem-bot-01.cert.pem
+
+create key pair:
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 > pem-bot-01.key.pem
+
+create self signed cert:
+//openssl req -x509 -key pem-bot-01.key.pem -subj /CN=pem-bot-01 -days 1000 > pem-bot-01.cert.pem
+
+create signing request:
+openssl req -new -key pem-bot-01.key.pem -out pem-bot-01.csr
+
+sign csr (and create cert) with our own CA:
+openssl x509 -req -days 360 -in pem-bot-01.csr -CA CA_server.crt -CAkey CA_serverPrivateKey.pem -CAcreateserial -out pem-bot-01.crt
+
