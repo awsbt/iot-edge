@@ -1,0 +1,61 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: dinpe-mini-01
+  region: us-gov-east-1
+  version: "1.21"
+  tags:
+    forgerock.io/cluster: "cdm-mini"
+    # ES_USEREMAIL: ${ES_USEREMAIL}
+    # ES_ZONE: ${ES_ZONE}
+    # ES_BUSINESSUNIT: ${ES_BUSINESSUNIT}
+    # BILLING_ENTITY: ${BILLING_ENTITY}
+    # ES_OWNEDBY: ${ES_OWNEDBY}
+    # ES_MANAGEDBY: ${ES_MANAGEDBY}
+
+vpc:
+  id: vpc-09455574a2bb9a3a9
+  subnets:
+    private:
+      us-gov-east-1a:
+        id: subnet-0ef7f8453eeda0127
+      us-gov-east-1b:
+        id: subnet-03089b9385cc69488
+      us-gov-east-1c:
+        id: subnet-01f561c1a5fb93525             
+  #cidr: 192.168.0.0/16
+
+#availabilityZones: ["us-gov-east-1a","us-gov-east-1b","us-gov-east-1c"]
+
+nodeGroups:
+  - name: primary
+    instanceType: m5.xlarge
+    minSize: 1
+    maxSize: 1
+    desiredCapacity: 1
+    volumeSize: 80
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        certManager: true
+        ebs: true
+    labels:
+      frontend: "true"
+      ds: "true"
+      forgerock.io/cluster: "cdm-mini"
+      forgerock.io/role: "primary"
+    tags:
+      forgerock.io/cluster: "cdm-mini"
+      forgerock.io/role: "primary"
+      # ES_USEREMAIL: ${ES_USEREMAIL}
+      # ES_ZONE: ${ES_ZONE}
+      # ES_BUSINESSUNIT: ${ES_BUSINESSUNIT}
+      # BILLING_ENTITY: ${BILLING_ENTITY}
+      # ES_OWNEDBY: ${ES_OWNEDBY}
+      # ES_MANAGEDBY: ${ES_MANAGEDBY}
+    privateNetworking: true
+    ssh:
+      # eksctl will use your default public key (e.a. $HOME/.ssh/id_rsa.pub) if no path is provided
+      publicKeyPath: id_rsa
+      allow: true
